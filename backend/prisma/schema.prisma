@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum userTodoEnum {
+  COMPLETED
+  PENDIING
+}
+
+enum priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum role {
+  ADMIN
+  MEMBER
+}
+
+model User {
+  id                           String   @id @default(uuid())
+  username                     String
+  email                        String
+  password                     String
+  fullname                     String
+  isEmailVerified              Boolean
+  refreshToken                 String
+  forgotPasswordToken          String
+  forgotPasswordTokenExpiry    DateTime
+  emailVerificarionToken       String
+  emailVerificarionTokenExpiry String
+
+  createdAt    DateTime
+  updatedAt    DateTime
+  project      project[]
+  notification notification[]
+  userTodo     userTodo[]
+}
+
+model userTodo {
+  id          String       @id @default(uuid())
+  createdBy   User         @relation(fields: [id], references: [id])
+  content     String
+  status      userTodoEnum @default(PENDIING)
+  priority    priority     @default(MEDIUM)
+  completedAt DateTime
+  createdAt   DateTime
+  updatedAt   DateTime
+}
+
+model project {
+  id            String          @id @default(uuid())
+  icon          String
+  titel         String
+  description   String
+  startDate     DateTime
+  DueDate       DateTime
+  createdBy     User            @relation(fields: [id], references: [id])
+  createdAt     DateTime
+  updatedAt     DateTime
+  projectMember projectMember[]
+  projectTask   projectTask[]
+}
+
+model projectTask {
+  id           String    @id @default(uuid())
+  title        String
+  description  String
+  priority     priority  @default(MEDIUM)
+  startDate    DateTime
+  duseDate     DateTime
+  assignedTo   String[]
+  assignedBy   String
+  Status       String
+  projectId    project   @relation(fields: [id], references: [id])
+  attachements String[]
+  subTask      subTask[]
+}
+
+model projectMember {
+  id             String   @id @default(uuid())
+  userid         String
+  projectId      project  @relation(fields: [id], references: [id])
+  role           role
+  invitedBy      String
+  inviteAccepted Boolean
+  joinAt         DateTime
+}
+
+model subTask {
+  id         String       @id @default(uuid())
+  projectId  projectTask  @relation(fields: [id], references: [id])
+  content    String
+  status     userTodoEnum @default(PENDIING)
+  copletedAt DateTime
+  createdAt  DateTime
+  updatedAt  DateTime
+}
+
+model notification {
+  id        String   @id @default(uuid())
+  userId    User     @relation(fields: [id], references: [id])
+  message   String
+  read      Boolean
+  createdAt DateTime
+}
